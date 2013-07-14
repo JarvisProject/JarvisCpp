@@ -146,11 +146,13 @@ public:
 	string& flagcheck(string& line)
 	{
 		if (string::npos != line.find("SMS--*--$"))
+		{
 			cin.ignore(256, '$');
 			Respond(L"SMS");
-		else if (string::npos != line.find("CONSOLE--*--$")
+		}
+		else if (string::npos != line.find("CONSOLE--*--$"))
 			cin.ignore(256, '$');
-		else if (string::npos != line.find("VOICE--*--$")
+		else if (string::npos != line.find("VOICE--*--$"))
 			cin.ignore(256, '$');
 
 	}
