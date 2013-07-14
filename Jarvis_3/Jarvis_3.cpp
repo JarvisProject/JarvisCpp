@@ -143,24 +143,31 @@ public:
 		waiter();
 	}*/
 
-	string& flagcheck(string& line)
+	bool flagcheck(string & line)
 	{
-		if (string::npos != line.find("SMS--*--$"))
+		bool bIsSMS;
+		string const sms_header("sms--*--$");
+		size_t nPos = line.find(sms_header);
+		if (string::npos != nPos)
 		{
-			cin.ignore(256, '$');
-			Respond(L"SMS");
+			bIsSMS=true;
+			//cin.ignore(256, '$');
+			line = line.substr(nPos+sms_header.size(), string::npos);
+			// Respond(L"SMS");
+			// James should add: cout << message
 		}
-		else if (string::npos != line.find("CONSOLE--*--$"))
-			cin.ignore(256, '$');
-		else if (string::npos != line.find("VOICE--*--$"))
-			cin.ignore(256, '$');
-
+		else
+		{   bIsSMS=false;
+			// James should add VOICE speeking!!!
+		}
+		return bIsSMS;
 	}
 
 	void beginning()
 	{
 		getline(cin, request);
 		request = lower_name(request);
+		bool bIsSMS = flagcheck(request);
 		if (request == "remember name")
 		{
 			pResp();
@@ -168,10 +175,10 @@ public:
 			beginning();
 			
 		}
-		else if (request == "Jarvis" || request == "yo Jarvis" ||
-				 request == "Yo Jarvis" || request == "Jarvis you there")
+		else if (request == "jarvis" || request == "yo jarvis" ||
+				 request == "yo jarvis" || request == "jarvis you there")
 		{
-			Respond(L"Yes sir?");
+			Respond(L"Yes sir?", bIsSMS);
 			beginning();
 			
 		}
@@ -530,20 +537,27 @@ public:
 		Respond(pResponse[0]);
 	}
 
-	int Respond(wstring const & response) //added "&"
+	int Respond(wstring const & response, bool bIsSMS=false) //added "&"
 	{
 		if (FAILED(::CoInitialize(NULL)))
 			return EXIT_FAILURE;
-
-		HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void **)&pVoice);    
-		if(SUCCEEDED(hr))
-		{							
-			hr = pVoice->Speak((LPCWSTR)response.c_str(), NULL, NULL);        
-	
-			pVoice->Release();
-			pVoice = NULL;
+		if(bIsSMS)
+		{
+			// FIXME: Try to convert to regular string for better compatibility with python
+			wcout << response << endl;
 		}
-		::CoUninitialize();
+		else
+		{
+			HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void **)&pVoice);    
+			if(SUCCEEDED(hr))
+			{							
+				hr = pVoice->Speak((LPCWSTR)response.c_str(), NULL, NULL);        
+	
+				pVoice->Release();
+				pVoice = NULL;
+			}
+			::CoUninitialize();
+		}
 
 		return EXIT_SUCCESS;
 	}
@@ -588,18 +602,18 @@ public:
 		return istr;
 	}
 
-	void in_file_name()
+	void in_file_name(bool bIsSMS=false)
 	{
 		ofstream filename;
 		respondance = L"What name would you like me to remember?";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		filename.open("name.txt",  ios::app | ios::out);
 		getline(cin, remember_name);
 		remember_name = encrypt(remember_name);
 		filename << remember_name << endl;
 		filename.close();
 		respondance = L"Task completed";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		int cvalue = in_file_name_leaving(remember_name);
 		if (cvalue == 0)
 		{
@@ -628,7 +642,7 @@ public:
 		filename.close();
 	}
 
-	int out_file_name(string & request_name)
+	int out_file_name(string & request_name, bool bIsSMS=false)
 	{
 		ifstream filename;
 		filename.open("name.txt", ios::in);
@@ -650,7 +664,7 @@ public:
 				else{
 				filename.close();
 				respondance = L"Perhaps adding your subdirectory to my memory?";
-				Respond(respondance);
+				Respond(respondance,bIsSMS);
 				return 1;
 				break;
 				}	
@@ -658,20 +672,20 @@ public:
 		}
 	}
 
-	void in_file_fname(string & path, string & fname_fname)
+	void in_file_fname(string & path, string & fname_fname, bool bIsSMS=false)
 	{
 		respondance = L"Appending";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		ofstream directory;
 		directory.open("directory.txt", ios::out | ios::app);
 		directory << path << endl;
 		directory.close();
 		respondance = L"Successfully completed sir.";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		beginning();
 	}
 
-	void Execprg(string & user_request)
+	void Execprg(string & user_request,bool bIsSMS=false)
 	{
 		//npos request in 2nd file full of directories
 		ifstream directory;
@@ -692,7 +706,7 @@ public:
 						system(("\"" + remember_directory + "\"").c_str());
 						//cout << "Launch was successful" << endl;
 						respondance = L"Launch was successful; .";
-						Respond(respondance);
+						Respond(respondance,bIsSMS);
 						beginning();
 						break;
 					}
@@ -711,25 +725,25 @@ public:
 		//cout << "Could not complete task" << endl;
 		nResp();
 		respondance = L"Launching was not successful";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		beginning();
 	}
 
-	void in_file_mount()
+	void in_file_mount(bool bIsSMS=false)
 	{
 		ofstream mountname;
 		respondance = L"What mounting directory should I remember? Please type sir.";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		getline(cin, remember_mountname);
 		remember_mountname = encrypt(remember_mountname);
 		mountname.open("mountname.txt", ios::app | ios::out);
 		mountname << remember_mountname << endl;
 		mountname.close();
 		respondance = L"Task completed";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 	}
 
-	string mountfile(string const & rm)
+	string mountfile(string const & rm, bool bIsSMS=false)
 	{
 		ifstream filename;
 		ifstream mountname;
@@ -747,7 +761,7 @@ public:
 			else if (string::npos != rm.find(out_name_beginning))
 			{
 				respondance = L"Checking for valid mount dir";
-				Respond(respondance);
+				Respond(respondance,bIsSMS);
 				while(mountname)
 				{
 					getline (mountname, out_mountname);
@@ -760,12 +774,12 @@ public:
 					{
 						run_mount_system = "powershell -command mount-diskimage -imagepath \"" + new_out_mountname + "\"";
 						system(("\"" + run_mount_system + "\"").c_str());
-						Respond(L"Conclusion sir... (Delete or no?). Please type sir.");
+						Respond(L"Conclusion sir... (Delete or no?). Please type sir.",bIsSMS);
 						getline(cin, answer);
 						if (string::npos != answer.find("delete") || string::npos != answer.find("erase"))
 						{
 							respondance = L"Mounting was unsuccessful";
-							Respond(respondance);
+							Respond(respondance,bIsSMS);
 							return new_out_mountname;
 						}
 						else
@@ -778,15 +792,15 @@ public:
 		}
 		nResp();
 		respondance = L"I could not mount the drive.";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		mountname.close();
 		filename.close();
 	}
 
-	void ambiguousmountfile()
+	void ambiguousmountfile(bool bIsSMS=false)
 	{
 		respondance = L"What would you like to mount sir? Please type sir.";
-		Respond(respondance);
+		Respond(respondance,bIsSMS);
 		getline (cin, request_mount);
 
 		if (string::npos != request_mount.find("nothing") || string::npos != request_mount.find("exit") ||
@@ -812,7 +826,7 @@ public:
 		return needname;
 	}
 	
-	void Define(string & req, unsigned & pos)
+	void Define(string & req, unsigned & pos,bool bIsSMS=false)
 	{
 		ifstream fileInput;
 		string line;
@@ -842,7 +856,7 @@ public:
 				if(comp == search)
 				{*/
 					respondance.assign(comp.begin(), comp.end());
-					Respond(respondance);
+					Respond(respondance,bIsSMS);
 					beginning();
 					break;
 				//}
@@ -855,7 +869,7 @@ public:
 		}
 		fileInput.close();
 		nResp();
-		Respond(L"That word isn't in my database");
+		Respond(L"That word isn't in my database",bIsSMS);
 		beginning();
 	}
 
