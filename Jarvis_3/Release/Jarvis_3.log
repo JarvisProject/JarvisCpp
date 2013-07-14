@@ -1,0 +1,24 @@
+﻿Build started 6/30/2013 5:27:03 PM.
+     1>Project "C:\James\Visual Studio\C++ Program Files\Jarvis_3\Jarvis_3\Jarvis_3.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Jarvis_3.cpp
+         Jarvis_3.cpp
+     1>Jarvis_3.cpp(470): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Jarvis_3.cpp(482): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Jarvis_3.cpp(494): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Jarvis_3.cpp(536): warning C4996: 'stricmp': The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name: _stricmp. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\string.h(249) : see declaration of 'stricmp'
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\James\Visual Studio\C++ Program Files\Jarvis_3\Release\Jarvis_3.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\James\Visual Studio\C++ Program Files\Jarvis_3\Release\Jarvis_3.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\James\Visual Studio\C++ Program Files\Jarvis_3\Release\Jarvis_3.lib" /MACHINE:X86 /SAFESEH Release\Jarvis_3.obj
+         Release\stdafx.obj
+         Generating code
+     1>c:\james\visual studio\c++ program files\jarvis_3\jarvis_3\jarvis_3.cpp(629): warning C4715: 'Jarvis_3::out_file_name' : not all control paths return a value
+     1>c:\james\visual studio\c++ program files\jarvis_3\jarvis_3\jarvis_3.cpp(597): warning C4715: 'Jarvis_3::in_file_name_leaving' : not all control paths return a value
+     1>c:\james\visual studio\c++ program files\jarvis_3\jarvis_3\jarvis_3.cpp(758): warning C4715: 'Jarvis_3::mountfile' : not all control paths return a value
+         Finished generating code
+         Jarvis_3.vcxproj -> C:\James\Visual Studio\C++ Program Files\Jarvis_3\Release\Jarvis_3.exe
+     1>Done Building Project "C:\James\Visual Studio\C++ Program Files\Jarvis_3\Jarvis_3\Jarvis_3.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.97
