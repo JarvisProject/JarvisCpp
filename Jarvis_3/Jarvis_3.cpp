@@ -158,7 +158,7 @@ public:
 		}
 		else
 		{   bIsSMS=false;
-			// James should add VOICE speeking!!!
+			// James should add VOICE speaking!!!
 		}
 		return bIsSMS;
 	}
@@ -352,7 +352,7 @@ public:
 			while(commands)
 			{
 				getline (commands, line);
-				line = decrypt(line);
+				//line = decrypt(line);
 				list = list + line + ". ";
 			}
 			commands.close();
@@ -403,7 +403,7 @@ public:
 			}
 			else
 			{
-				Respond(L"Could not find the directory telldate.exe");
+				Respond(L"Could not find the directory telldate.exe", bIsSMS);
 			}
 			beginning();
 			
@@ -545,11 +545,11 @@ public:
 		Respond(pResponse[0], bIsSMS);
 	}
 
-	int Respond(wstring const & response, bool bIsSMS=false) //added "&"
+	int Respond(wstring const & response, bool bIsSMS) //added "&"
 	{
 		if (FAILED(::CoInitialize(NULL)))
 			return EXIT_FAILURE;
-		if(bIsSMS)
+		if(bIsSMS==true)
 		{
 			// FIXME: Try to convert to regular string for better compatibility with python
 			wcout << response << endl;
