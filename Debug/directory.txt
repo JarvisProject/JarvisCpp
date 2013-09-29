@@ -1,6 +1,0 @@
-C:\\Windows\notepad.exe
-C:\\James\Starcraft Install\Starcraft\starcraft.exe
-C:\\Program Files (x86)\Google\Chrome\Application\chrome.exe
-C:\\James\9Dragons\9Dragons\NDLAUNCHER.exe
-C:\\James\Starcraft Install\Starcraft\starcraft.exe
-C:\\James\Starcraft Install\Starcraft\starcraft.exe
