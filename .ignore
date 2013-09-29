@@ -1,0 +1,6 @@
+*tlog
+*Debug
+*Release
+*.exe
+*.obj
+*.lib

@@ -76,7 +76,7 @@ public:
 			else if (comppass == pass) //passwords do match
 			{
 				system("CLS");
-				Questions_Help();
+				Questions_Help(bIsSMS);
 				beginning();
 			}
 			else //passwords just don't match
@@ -158,7 +158,7 @@ public:
 		}
 		else
 		{   bIsSMS=false;
-			// James should add VOICE speeking!!!
+			// James should add VOICE speaking!!!
 		}
 		return bIsSMS;
 	}
@@ -170,8 +170,8 @@ public:
 		bool bIsSMS = flagcheck(request);
 		if (request == "remember name")
 		{
-			pResp();
-			in_file_name();
+			
+			in_file_name(bIsSMS);
 			beginning();
 			
 		}
@@ -184,8 +184,8 @@ public:
 		}
 		else if (request == "remember mount name" || request == "remember mounting name" || request == "remember mount")
 		{
-			pResp();
-			in_file_mount();
+			
+			in_file_mount(bIsSMS);
 			beginning();
 			
 		}
@@ -193,18 +193,18 @@ public:
 		else if (request == "delete in filename" || request == "delete filename" || request == "filename delete"
 				 || request == "delete name" || request == "delete names")
 		{
-			pResp();
+			
 			respondance = L"What would you like to delete sir?";
-			Respond(respondance);
+			Respond(respondance, bIsSMS);
 			getline(cin, request);
-			pResp();
+			pResp(bIsSMS);
 			if (request == "all")
 			{
 				ofstream filename;
 				filename.open("name.txt", ios::trunc);
 				filename.close();
 				respondance = L"Succesfully truncated names.";
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 				delete_line(encrypt(request));
@@ -214,18 +214,18 @@ public:
 
 		else if (request == "delete in mountname" || request == "delete mountname" || request == "mountname delete" || request == "delete mount")
 		{
-			pResp();
+			
 			respondance = L"What would you like to delete sir?";
-			Respond(respondance);
+			Respond(respondance, bIsSMS);
 			getline(cin, request);
-			pResp();
+			pResp(bIsSMS);
 			if (request == "all")
 			{
 				ofstream mountname;
 				mountname.open("mountname.txt", ios::trunc);
 				mountname.close();
 				respondance = L"Succesfully truncated mount names.";
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 				delete_line_mount(encrypt(request));
@@ -235,18 +235,18 @@ public:
 
 		else if (request == "delete directory" || request == "delete directories")
 		{
-			pResp();
+		
 			respondance = L"What would you like to delete sir?";
-			Respond(respondance);
+			Respond(respondance, bIsSMS);
 			getline(cin, request);
-			pResp();
+			pResp(bIsSMS);
 			if (request == "all")
 			{
 				ofstream filename;
 				filename.open("name.txt", ios::trunc);
 				filename.close();
 				respondance = L"Succesfully truncated directories.";
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 				delete_line_dir(encrypt(request));
@@ -261,15 +261,15 @@ public:
 		}*/
 		else if (string::npos != request.find("execute") || string::npos != request.find("run"))
 		{
-			pResp();
-			Execprg(request);
+			
+			Execprg(request, bIsSMS);
 			beginning();
 			
 		}
 		else if (string::npos != request.find("mount") && request.size() > compsize.size())
 		{
-			pResp();
-			string c_string = mountfile(request);
+			
+			string c_string = mountfile(request, bIsSMS);
 			if (c_string.length() > 1)
 			{
 				c_string = encrypt(c_string);
@@ -284,69 +284,79 @@ public:
 		}
 		else if (string::npos != request.find("mount") && request.size() == compsize.size())
 		{
-			pResp();
-			ambiguousmountfile();
+			
+			ambiguousmountfile(bIsSMS);
 			beginning();
 			
 		}
-		else if (string::npos != request.find("list directory") || string::npos != request.find("list directories"))
+		else if (string::npos != request.find("list directory") || string::npos != request.find("list directories") || 
+				 string::npos != request.find("list some directories") || string::npos != request.find("list of directories"))
 		{
-			pResp();
+			
 			ifstream directory;
+			string list;
 			directory.open("directory.txt", ios::in);
 			while(directory)
 			{
 				getline(directory, line);
 				line = decrypt(line);
-				cout << line << endl;
+				list = list + line + ". ";
 			}
 			directory.close();
+			cout << list << endl;
 			beginning();
 			
 		}
-		else if (string::npos != request.find("list name") || string::npos != request.find("list names"))
+		else if (string::npos != request.find("list name") || string::npos != request.find("list names") ||
+				 string::npos != request.find("list some names") || string::npos != request.find("list of names"))
 		{
-			pResp();
+			
 			ifstream filename;
+			string list;
 			filename.open("name.txt", ios::in);
 			while(filename)
 			{
 				getline	(filename, line);
 				line = decrypt(line);
-				cout << line << endl;
+				list = list + line + ". ";
 			}
 			filename.close();
+			cout << list << endl;
 			beginning();
 			
 		}
 		else if (string::npos != request.find("list mount") || string::npos != request.find("list mountnames") ||
-				 string::npos != request.find("list mount names"))
+				 string::npos != request.find("list mount names") || string::npos != request.find("list of mountnames") ||
+				 string::npos != request.find("list some mountnames"))
 		{
-			pResp();
+			
 			ifstream mountname;
+			string list;
 			mountname.open("mountname.txt", ios::in);
 			while(mountname)
 			{
 				getline	(mountname, line);
 				line = decrypt(line);
-				cout << line << endl;
+				list = list + line + ". ";
 			}
 			mountname.close();
+			cout << list << endl;
 			beginning();
 			
 		}
-		else if (request == "list commands" || request == "help")
+		else if (request == "list commands" || request == "help" || request == "list some commands")
 		{
-			pResp();
 			ifstream commands;
+			string list = "";
 			commands.open("commands.txt", ios::in);
 			while(commands)
 			{
 				getline (commands, line);
-				line = decrypt(line);
-				cout << line << endl;
+				//line = decrypt(line);
+				list = list + line + ". ";
 			}
 			commands.close();
+			cout << list << endl;
 			beginning();
 			
 		}
@@ -365,12 +375,11 @@ public:
 				getline(ttime, line);
 				ttime.close();
 				respondance = L"It is " + respondance.assign(line.begin(), line.end());
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 			{
-				cout << "telltime.exe does not exist under " << top_dir << endl;
-				Respond(L"Could not find the directory");
+				Respond(L"Could not find the directory for telltime.exe", bIsSMS);
 			}
 			beginning();
 			
@@ -390,12 +399,11 @@ public:
 				getline(tdate, line);
 				tdate.close();
 				respondance.assign(line.begin(), line.end());
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 			{
-				cout << "telldate.exe does not exist under " << top_dir << endl;
-				Respond(L"Could not find the directory");
+				Respond(L"Could not find the directory telldate.exe", bIsSMS);
 			}
 			beginning();
 			
@@ -403,9 +411,9 @@ public:
 		else if (request == "quit" || request == "power off" ||
 				 request == "shut down" || request == "leave")
 		{
-			cout << "Terminating..." << endl;
+			
 			respondance = L"Shutting down power";
-			Respond(respondance);
+			Respond(respondance, bIsSMS);
 			exit(0);
 			
 		}
@@ -424,23 +432,23 @@ public:
 				getline(weather, line);
 				weather.close();
 				respondance.assign(line.begin(), line.end());
-				Respond(respondance);
+				Respond(respondance, bIsSMS);
 			}
 			else
 			{
-				Respond(L"Could not find the directory for weather.exe");
+				Respond(L"Could not find the directory for weather.exe", bIsSMS);
 			}
 			beginning();
 			
 		}
 		/*else if (request == "setup")
 		{
-			pResp();
+			pResp(bIsSMS);
 			setup();
 		}*/
 		/*else if (string::npos != request.find("change pass"))
 		{
-			pResp();
+			pResp(bIsSMS);
 			string pass;
 			cout << "What would you like your password to be changed into?" << endl;
 			Respond(L"What shall I change it to?");
@@ -456,7 +464,7 @@ public:
 		}*/
 		/*else if (request == "logout" || request == "log out")
 		{
-			pResp();
+			pResp(bIsSMS);
 			system("CLS");
 			login();
 		}*/
@@ -484,8 +492,8 @@ public:
 		{
 			/*respondance = L"Invalid request sir";
 			cout << "Invalid request sir" << endl;
-			Respond(respondance);*/
-			uResp();
+			Respond(respondance, bIsSMS);*/
+			uResp(bIsSMS);
 			beginning();
 		}
 		
@@ -493,7 +501,7 @@ public:
 
 	//speech variation (positive resp, negative resp, resp action)
 
-	void pResp()
+	void pResp(bool bIsSMS)
 	{
 		wstring c_words[] = {L"Yes sir!", L"Will do sir!", L"Certainly!", L"I will get on it sir!", L"As you wish sir",
 							 };
@@ -501,10 +509,10 @@ public:
 		pResponse.assign(c_words, c_words+nWords);
 		srand(time(0));
 		random_shuffle(pResponse.begin(), pResponse.end());
-		Respond(pResponse[0]);
+		Respond(pResponse[0], bIsSMS);
 	}
 
-	void nResp()
+	void nResp(bool bIsSMS)
 	{
 		wstring c_words[] = {L"Sir, I'm afraid I cannot proceed!", L"Sir, your request cannot be fulfilled!", 
 							 L"I'm sorry sir!; There's nothing I can do.", L"Sir, I am not able to satisfy your request!"};
@@ -512,10 +520,10 @@ public:
 		pResponse.assign(c_words, c_words+nWords);
 		srand(time(0));
 		random_shuffle(pResponse.begin(), pResponse.end());
-		Respond(pResponse[0]);
+		Respond(pResponse[0], bIsSMS);
 	}
 
-	void Questions_Help()
+	void Questions_Help(bool bIsSMS)
 	{
 		wstring c_words[] = {L"How may I help you sir?", L"What would you like me to do sir?",
 							 L"What is your request sir?", L"How may I be at your service?"};
@@ -523,10 +531,10 @@ public:
 		pResponse.assign(c_words, c_words+nWords);
 		srand(time(0));
 		random_shuffle(pResponse.begin(), pResponse.end());
-		Respond(pResponse[0]);
+		Respond(pResponse[0], bIsSMS);
 	}
 
-	void uResp()
+	void uResp(bool bIsSMS)
 	{
 		wstring c_words[] = {L"Invalid request sir.", L"Sir, I didn't quite catch that.",
 							 L"Sir I don't quite follow.", L"Sir, could you repeat that?"};
@@ -534,14 +542,14 @@ public:
 		pResponse.assign(c_words, c_words+nWords);
 		srand(time(0));
 		random_shuffle(pResponse.begin(), pResponse.end());
-		Respond(pResponse[0]);
+		Respond(pResponse[0], bIsSMS);
 	}
 
-	int Respond(wstring const & response, bool bIsSMS=false) //added "&"
+	int Respond(wstring const & response, bool bIsSMS) //added "&"
 	{
 		if (FAILED(::CoInitialize(NULL)))
 			return EXIT_FAILURE;
-		if(bIsSMS)
+		if(bIsSMS==true)
 		{
 			// FIXME: Try to convert to regular string for better compatibility with python
 			wcout << response << endl;
@@ -723,7 +731,7 @@ public:
 		filename.close();
 		directory.close();
 		//cout << "Could not complete task" << endl;
-		nResp();
+		nResp(bIsSMS);
 		respondance = L"Launching was not successful";
 		Respond(respondance,bIsSMS);
 		beginning();
@@ -790,7 +798,7 @@ public:
 				break;
 			}
 		}
-		nResp();
+		nResp(bIsSMS);
 		respondance = L"I could not mount the drive.";
 		Respond(respondance,bIsSMS);
 		mountname.close();
@@ -806,13 +814,13 @@ public:
 		if (string::npos != request_mount.find("nothing") || string::npos != request_mount.find("exit") ||
 			string::npos != request_mount.find("quit") || string::npos != request_mount.find("back to main"))
 		{
-			pResp();
+			pResp(bIsSMS);
 			beginning();
 		}
 
 		else
 		{
-			pResp();
+			pResp(bIsSMS);
 			mountfile(request_mount);
 		}
 	}
@@ -868,7 +876,7 @@ public:
 			}
 		}
 		fileInput.close();
-		nResp();
+		nResp(bIsSMS);
 		Respond(L"That word isn't in my database",bIsSMS);
 		beginning();
 	}
