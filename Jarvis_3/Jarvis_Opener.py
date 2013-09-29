@@ -1,7 +1,8 @@
+import mutex
 from multiprocessing import Process, Pipe, Pool
 from subprocess import Popen, PIPE
-from googlevoice.util import input
-from googlevoice import Voice
+# from googlevoice.util import input
+# from googlevoice import Voice
 import win32api, win32con, win32gui
 import subprocess
 import threading
@@ -67,10 +68,10 @@ def speech_do_work(boolean):
         
 ### SMS Input    
 #log in
-voice = Voice()
+# voice = Voice()
 mail = imaplib.IMAP4_SSL('imap.gmail.com', '993')
 
-voice.login("jarvisatyourservice1@gmail.com", "15963212")
+# voice.login("jarvisatyourservice1@gmail.com", "15963212")
 mail.login('jarvisatyourservice1@gmail.com', '15963212')
 
 
@@ -168,7 +169,8 @@ def sendsms(line):
 
 ### Jarvis engine
 def CallJarvis():
-    p = Popen("C:/James/Visual Studio/C++ Program Files/Jarvis_3/Debug/Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
+    # p = Popen("C:/James/Visual Studio/C++ Program Files/Jarvis_3/Debug/Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
+    p = Popen("Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
     return p
 ### Helper launcher for inputs
 def launch_proc(target, idx, name, pipe_pair=None):
@@ -208,6 +210,95 @@ def Console(child_conn):
         line = sys.stdin.readline()
         child_conn.send(line)
         cval.set_release(1)
+###############################################
+# NEW IMPLEMENTATION
+# ==> mutex based function threads 
+###############################################
+mtx = mutex.mutex()
+
+def write_to_jarvis(args):
+    jarvis_out, line = args
+    jarvis_out.write(line)
+
+## Console handler
+def console_thread(jarvis_pipe):
+    jarvis_in = jarvis_pipe.stdin
+    jarvis_out = jarvis_pipe.stdout
+    while True:
+        line = sys.stdin.readline()
+        # data is ready.. 
+        # lock the mutex and communicate with jarvis
+        mtx.lock(write_to_jarvis, (jarvis_in, line))
+        mtx.unlock()
+
+## SMS handler
+def sms_readline():
+    while True:
+        mail.select()
+        #searches how many unseen "['OK']['<number>']"
+        aaa, bbb = mail.search(None,'UNSEEN')
+        #if the number of unseen is more than 0, read it
+        if bbb != ['']:
+            #set to inbox
+            #log in and select the inbox
+    ##            mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    ##            mail.login('jarvisatyourservice1@gmail.com', '15963212')
+            mail.select('inbox')
+
+            #get uids of all messages
+            result, data = mail.uid('search', None, 'ALL') 
+            uids = data[0].split()
+
+            #read the lastest message
+            result, data = mail.uid('fetch', uids[-1], '(RFC822)')
+            m = email.message_from_string(data[0][1])
+            #for i in range(1, 30):
+                #typ, msg_data = mail.fetch(str(i), '(RFC822)')
+            #for response_part in msg_data:
+    ##            for response_part in data:
+    ##                if isinstance(response_part, tuple):
+            msg_recv = m.get_payload()
+            return msg_recv
+        sleep(0.5)
+
+def sms_thread(jarvis_pipe):
+    jarvis_in = jarvis_pipe.stdin
+    jarvis_out = jarvis_pipe.stdout
+    while True:
+        line = sms_readline()
+        # data is ready.. 
+        # lock the mutex and communicate with jarvis
+        mtx.lock(write_to_jarvis, (jarvis_in, "SMS--*--$%s" % line))
+        line_jarvis = sms_readline()
+        sendsms(line_jarvis)
+
+        # for response_part in data:
+        #     if isinstance(response_part, tuple):
+        #         msg = email.message_from_string(response_part[1])
+        #         for header in [ 'from' ]:
+        #             if msg['from'] == "\"Master James (SMS)\" <12013835929.18589976724.gKlK4mgjKB@txt.voice.google.com>":
+        #                 #Access granted. Special commands else go to C++
+        #                 if msg_recv == "Call me\n":
+        #                     print "Calling..."
+        #                     voice.call("8589976724", "2013835929", 1, None)
+        #                 else:
+        #                     child_conn.send("SMS--*--$%s" %msg_recv)
+        #         
+        # delete_inbox()
+
+        mtx.unlock()
+
+## Voice handler
+def voice_thread(jarvis_pipe):
+    jarvis_in = jarvis_pipe.stdin
+    jarvis_out = jarvis_pipe.stdout
+    while True:
+        line = speech.input()
+        # data is ready.. 
+        # lock the mutex and communicate with jarvis
+        mtx.lock(write_to_jarvis, (jarvis_in, line+'\n'))
+        mtx.unlock()
+
 
 if __name__ == '__main__':
     proc_list=[]
@@ -228,41 +319,51 @@ if __name__ == '__main__':
 
     # Launch Console & Voice
 
-    proc_list.append( launch_proc(Console, 1, "Console") )
-##    proc_list.append( launch_proc(Voice, 2, "Voice") )
-    proc_list.append( launch_proc(SMS, 3, "SMS") )
+    # proc_list.append( launch_proc(Console, 1, "Console") )
+    # proc_list.append( launch_proc(Voice, 2, "Voice") )
+    # proc_list.append( launch_proc(SMS, 3, "SMS") )
     
     
     # Launch Jarvis executable
     pJarvis = CallJarvis()
-    Jarvis_in = pJarvis.stdin
-    Jarvis_out = pJarvis.stdout
 
-    while True:
-        for proc, parent_conn, idx, name in proc_list:
-            ##Waiting for response of Tony Stark
-            cval.wait_for(idx, 0.5)
-            if(cval.get() != idx):
-                cval.release()
-                continue
-            ## Yes. Response available from my lord
-            msg = parent_conn.recv()
-            print  name,": ", msg
-            ##(2) Send it to Jarvis
-            if idx == 3: #SMS
-                ##(3) Take the acceptance response from Jarvis
-                Jarvis_in.write(msg)
-                line = Jarvis_out.readline()
-                print line
-                sendsms(str(line))
-            if idx == 1: #Console
-                Jarvis_in.write(msg)
-            if idx == 2:   #Voice
-                Jarvis_in.write(msg + "\n")
-            else:
-                print "No index detected"
-            
-            ##(4) Release condition variable
-            cval.set_release(0)
-            break;
+    console_thr = threading.Thread(target=console_thread, args=(pJarvis,) )
+    console_thr.start()
+ 
+    sms_thr = threading.Thread(target=sms_thread, args=(pJarvis,) )
+    sms_thr.start()
+ 
+    # voice_thr = threading.Thread(target=voice_thread, args=(pJarvis,) )
+    # voice_thr.start()
+
+    console_thr.join()
+    sms_thr.join()
+    exit()
+    # while True:
+    #     for proc, parent_conn, idx, name in proc_list:
+    #         ##Waiting for response of Tony Stark
+    #         cval.wait_for(idx, 0.5)
+    #         if(cval.get() != idx):
+    #             cval.release()
+    #             continue
+    #         ## Yes. Response available from my lord
+    #         msg = parent_conn.recv()
+    #         print  name,": ", msg
+    #         ##(2) Send it to Jarvis
+    #         if idx == 3: #SMS
+    #             ##(3) Take the acceptance response from Jarvis
+    #             Jarvis_in.write(msg)
+    #             line = Jarvis_out.readline()
+    #             print line
+    #             sendsms(str(line))
+    #         if idx == 1: #Console
+    #             Jarvis_in.write(msg)
+    #         if idx == 2:   #Voice
+    #             Jarvis_in.write(msg + "\n")
+    #         else:
+    #             print "No index detected"
+    #         
+    #         ##(4) Release condition variable
+    #         cval.set_release(0)
+    #         break;
         
