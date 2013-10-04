@@ -1,8 +1,8 @@
 import mutex
 from multiprocessing import Process, Pipe, Pool
 from subprocess import Popen, PIPE
-# from googlevoice.util import input
-# from googlevoice import Voice
+from googlevoice.util import input
+from googlevoice import Voice
 import win32api, win32con, win32gui
 import subprocess
 import threading
@@ -68,11 +68,11 @@ def speech_do_work(boolean):
         
 ### SMS Input    
 #log in
-# voice = Voice()
+voice = Voice()
 mail = imaplib.IMAP4_SSL('imap.gmail.com', '993')
 
-# voice.login("jarvisatyourservice1@gmail.com", "15963212")
-mail.login('jarvisatyourservice1@gmail.com', '15963212')
+#voice.login('jarvisatyourservice1@gmail.com', '15963212')
+mail.login( 'jarvisatyourservice1@gmail.com', '15963212')
 
 
 def internet_on():
@@ -170,7 +170,7 @@ def sendsms(line):
 ### Jarvis engine
 def CallJarvis():
     # p = Popen("C:/James/Visual Studio/C++ Program Files/Jarvis_3/Debug/Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
-    p = Popen("Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
+    p = Popen("E:/Jason/Projects/JarvisCpp/Debug/Jarvis_3.exe", stdin=PIPE, stdout=PIPE, shell=True) #stderr=child_conn)
     return p
 ### Helper launcher for inputs
 def launch_proc(target, idx, name, pipe_pair=None):
@@ -238,6 +238,7 @@ def sms_readline():
         #searches how many unseen "['OK']['<number>']"
         aaa, bbb = mail.search(None,'UNSEEN')
         #if the number of unseen is more than 0, read it
+        msg_recv = ""
         if bbb != ['']:
             #set to inbox
             #log in and select the inbox
@@ -257,9 +258,21 @@ def sms_readline():
             #for response_part in msg_data:
     ##            for response_part in data:
     ##                if isinstance(response_part, tuple):
-            msg_recv = m.get_payload()
-            return msg_recv
-        sleep(0.5)
+            line = m.get_payload()
+
+            for response_part in data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_string(response_part[1])
+                    for header in [ 'from' ]:
+                        if msg['from'] == "\"Master James (SMS)\" <12013835929.18589976724.gKlK4mgjKB@txt.voice.google.com>":
+                            #Access granted. Special commands else go to C++
+                            if line == "Call me\n":
+                                voice.call("8589976724", "2013835929", 1, None)
+                            else:
+                                return ("SMS--*--$%s" % line)
+                    
+            delete_inbox()
+        time.sleep(0.5)
 
 def sms_thread(jarvis_pipe):
     jarvis_in = jarvis_pipe.stdin
