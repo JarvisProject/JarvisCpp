@@ -1,0 +1,240 @@
+set nu ai ts=4 shiftwidth=4
+set backspace=indent,eol,start
+set guifont=Consolas:h11
+set columns=90 lines=40
+set nowrap expandtab
+set printfont=Consolas:h9
+set popt=number:y,paper:letter
+syntax on
+noremap ;; :%s```g<Left><Left><Left>
+noremap ;' :%s```cg<Left><Left><Left><Left>
+noremap ;: :s```g<Left><Left><Left>
+noremap ;" :s```cg<Left><Left><Left><Left>
+map <F2> :w<CR>
+map! <F2> <Esc>:w<CR>a
+map <S-F2> :wa<CR>
+map <F5>  :e!<CR>
+map! <F5>  <Esc>:e!<CR>
+map <F8> :set list<CR>
+map <S-F8> :set nolist<CR>
+map <C-s> :w<CR>
+map! <C-s> <Esc>:w<CR>a
+map <C-q> :q<CR>
+map! <C-q> <Esc>:q<CR>
+map <C-S-q> :q!<CR>
+map! <C-S-q> <Esc>:q!<CR>
+map! <S-CR> <Esc>YpI<ESC>
+map <C-\> /error:/<CR>
+map! <C-\> <Esc>/error:/<CR>
+map <C-F12> :%s/BloombergLP::qfd::hybrid:://ge<CR>:%s/error:/&\r\t/ge<CR>gg<CR>/error:/e<CR>
+map! <C-F12> <ESC>:%s/BloombergLP::qfd::hybrid:://ge<CR>:%s/error:/&\r\t/ge<CR>gg<CR>/error:/e<CR>
+map! <C-k> <ESC>pa
+map <C-a> ggvG
+    
+function! ShiftTab(direction)
+     let tab_number = tabpagenr() 
+     if a:direction == 0
+         if tab_number == 1
+             exe 'tabm' . tabpagenr('$')
+         else
+             exe 'tabm' . (tab_number - 2)
+         endif
+     else
+         if tab_number == tabpagenr('$')
+             exe 'tabm ' . 0
+         else
+             exe 'tabm ' . tab_number
+         endif
+     endif
+     return ''
+endfunction
+
+inoremap <silent> <C-S-Left> <C-r>=ShiftTab(0)<CR>
+inoremap <silent> <C-S-Left> <C-r>=ShiftTab(0)<CR>
+inoremap <silent> <C-S-Right>  <C-r>=ShiftTab(1)<CR>
+
+noremap <silent> <C-S-Left>  :call ShiftTab(0)<CR>
+noremap <silent> <C-S-Right> :call ShiftTab(1)<CR>
+au BufRead,BufNewFile *.cu		set filetype=cpp
+
+function! Comment()
+    if &ft == "cpp"
+        s/^/\/\//
+    elseif &ft == "ocaml"
+        s/^/(*/
+        s/$/*)/
+    elseif &ft == "python" || &ft == "sh"
+        s/^/#/
+    elseif &ft == "vim"
+        s/^/"/
+    endif
+endfunction
+
+function! UnComment()
+    if &ft == "cpp"
+        s/^\/\///
+    elseif &ft == "ocaml"
+        s/^(*//
+        s/*)\w*$//
+    elseif &ft == "python" || &ft == "sh"
+        s/^#//
+    elseif &ft == "vim"
+        s/^"//
+    endif
+endfunction
+
+function! AddComment()
+    if &ft == "cpp"
+        return "/* */"
+    elseif &ft == "ocaml"
+        return "(* *)"
+    elseif &ft == "python" || &ft == "sh"
+        return "#"
+    elseif &ft == "vim"
+        return '"'
+    endif
+    return ""
+endfunction
+
+function! AddTemplate()
+    if &ft == "cpp"
+        return "template<> struct { };\<ESC>f<a"
+    endif
+    return ""
+endfunction    
+
+function! AddTemplateLN()
+    if &ft == "cpp"
+        return "template<>\<CR>struct \<CR>{\<CR>};\<CR>\<ESC>5-\<CR>f<a"
+    endif
+    return ""
+endfunction    
+
+function! AddClass()
+    if &ft == "cpp"
+        return "class "
+    endif
+    return ""
+endfunction    
+
+function! UnDefine()
+    if &ft == "cpp"
+        s/(.*$//
+        s/\<define\>/undef/
+    endif
+endfunction
+
+function! MatchingStr(cc)
+    if a:cc == "{"
+        return "{}"
+    elseif a:cc == "["
+        return "[]"
+    elseif a:cc == "<"
+        return "<>"
+    elseif a:cc == "("
+        return "()"
+endfunction
+
+map  <silent> <F4> :call Comment()<CR>
+map! <silent> <F4>  <ESC>:call Comment()<CR>
+map  <silent> <C-F4> :ya z\|'<,'>call Comment()<CR>
+map! <silent> <C-F4>  <ESC>:ya z\|'<,'>call Comment()<CR>
+map <silent> <S-F4> :call UnComment()<CR>
+map!<silent> <S-F4>  <Esc>:call UnComment()<CR>
+map <silent> <C-U> :call UnDefine()<CR>
+
+imap <silent> <SC-C> <C-R>=AddComment()<CR>
+"imap <silent> <C-T> <C-R>=AddTemplate()<CR>
+imap <silent> <C-T> <C-R>=AddTemplateLN()<CR>
+imap <silent> <C-C> <C-R>=AddClass()<CR>
+imap <silent> <F9><C-P> ()<ESC>i
+imap <silent> <F9><C-R> {}<ESC>i
+imap <silent> <F9><C-K> <><ESC>i
+
+function! AddDate()
+   return strftime("%Y/%m/%d")
+endfunction
+
+imap <silent> <C-F><C-D> <C-R>=AddDate()<CR>
+
+function! Repeat_num(cc, width,offset)
+    let str = ""
+    let kk = a:offset
+    while kk < a:width
+        if (kk+1) % 10 == 0
+            let str = str . (kk+1)/10
+        else
+            let str = str . a:cc
+        endif
+        let kk += 1
+    endwhile
+    return str
+endfunction
+
+function! CommentBlock(comment, ...)
+    let introducer = a:0 >= 1 ? a:1 : "//"
+    let box_char   = a:0 >= 2 ? a:2 : "/"
+    let newline_char = a:0 >= 3 ? a:3 : introducer
+    let ending     = a:0 >= 4 ? a:4 : ""
+    let width      = max([40, a:0 >= 5 ? a:4 : strlen(a:comment)+2])
+
+    return introducer . Repeat_num(box_char,width,strlen(introducer)) . "\<CR>"
+    \    . newline_char . " " . a:comment . "\<CR>"
+    \    . newline_char . Repeat_num(box_char,width,strlen(newline_char)) . "\<CR>"
+    \    . ending . "\<CR>"
+endfunction
+
+function! AddCommentBlock(comment)
+    if &ft == "cpp"
+        return CommentBlock(a:comment,'//','/','//')
+    elseif &ft == "ocaml"
+        return CommentBlock(a:comment,'(*','/',' *','*)')
+    elseif &ft == "python"
+        return CommentBlock(a:comment,'#','/')
+    elseif &ft == "vim"
+        return CommentBlock(a:comment,'"','/')
+    return ""
+endfunction
+imap <silent> <C-B> <C-R>=AddCommentBlock(input("Enter comment: "))<CR>
+
+function! AddHeaderBlock(comment)
+    if &ft == "cpp"
+        return "#if !defined(" . a:comment . ")\<CR>"
+        \    . "#define " . a:comment . "\<CR>\<CR>"
+        \    . "#endif /* " . a:comment . " */\<CR>"
+    endif
+    return ""
+endfunction
+imap <silent> <C-H> <C-R>=AddHeaderBlock(input("Enter header name: "))<CR>
+
+function! ConvertBracket()
+    if &ft == "cpp"
+        '<,'>s/>/}/g
+        '<,'>s/</{/g
+    endif
+endfunction
+
+function! UnConvertBracket()
+    if &ft == "cpp"
+        s/}/>/g
+        s/{/</g
+    endif
+endfunction
+
+vmap <silent> <C-I> :call ConvertBracket()<CR>
+vmap <silent> <C-J> :call UnConvertBracket()<CR>
+
+"function! SetContextMap()
+"    if &ft == "cpp"
+"        nmap <silent> <F4> :s/^/\/\//<CR>
+"        imap <silent> <F4> <ESC>:s/^/\/\//<CR>
+"    elseif &ft == "ocaml"
+"        nmap <silent> <F4> :s/^/(*/<CR>: s/$/*)/<CR>
+"    elseif &ft == "python"
+"        nmap <silent> <F4>  s/^/#/
+"    endif
+"endfunction
+"
+"autocmd FileType * :call SetContextMap()
+nnoremap <silent> <F12> :TlistToggle<CR>
+

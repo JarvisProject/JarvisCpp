@@ -1,0 +1,7 @@
+alias l='ls -la'
+alias lf='ls -FC'
+alias gadd='git add'
+alias gbranch='git branch'
+alias gdiff='git diff'
+alias glog='git log'
+alias gstat='git status'
